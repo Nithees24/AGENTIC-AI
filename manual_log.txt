@@ -1,0 +1,40 @@
+BUILD 0.0.1: 06/03/2026 03:04 PM
+
+agentic_ai/
+│
+├── main.py ---> main file for running the program
+├── config.py ---> configuration file for llm and other models
+│
+├── llm/
+│   └── llm_client.py ---> llm_call client for llm services
+│
+├── agents/
+│   └── general_chat_agent.py  --> general_chat_agent where the works and methods of general chat agent is coded
+│
+└── utils/
+    └── prompt_builder.py -----> prompt for the llm (instructions and principles)
+
+GENERAL CHAT WINDOW
+
+User Input  →  LLM  →  Response
+
+User provides the input and the LLM provides the response. This is the basic low level execution for the LLM answering in scientific approach
+
+ARCHITECTURE FOR BUILD 0.0.1
+User
+  ↓
+main.py
+  ↓
+GeneralChatAgent
+  ↓
+PromptBuilder
+  ↓
+LLMClient
+  ↓
+Gemini API
+
+FUTURE  BUILDS MAY INCLUDE:
+PDF agent
+Citation agent
+Memory agent
+Search agent

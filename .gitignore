@@ -1,0 +1,24 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+.env/
+
+# PyCharm
+.idea/
+
+# Mac files
+.DS_Store
+
+# Logs
+*.log
+
+# Environment variables
+.env
+
+# Build files
+build/
+dist/

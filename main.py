@@ -14,7 +14,6 @@ def main():
         response = agent.run(user_query)
 
         print("\nAI:",response)
-        #printing response
 
 if __name__ == "__main__":
     main()

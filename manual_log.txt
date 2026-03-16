@@ -38,3 +38,25 @@ PDF agent
 Citation agent
 Memory agent
 Search agent
+
+
+
+16/03/2026 DEEP RESEARCH AGENT 11.25 PM
+
+User Query
+↓
+Research Planner
+↓
+Source Retrieval
+↓
+Content Extraction
+↓
+Data Aggregation
+↓
+Evidence Ranking
+↓
+Research Synthesis
+↓
+Structured Report + Citations
+
+Should confirm : Evidence → Analysis → Conclusion

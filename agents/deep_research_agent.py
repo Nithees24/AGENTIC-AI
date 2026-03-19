@@ -56,5 +56,100 @@ class DeepResearchAgent:
             print(f"[FATAL ERROR]: {e}")
             return "Something went wrong during deep research."
 
+    # -----------------------------
+    # Individual Steps
+    # -----------------------------
+
+    def _plan(self, query):
+        try:
+            print("[1] Planning...")
+            return self.planner.plan(query)
+        except Exception as e:
+            print(f"Planner error: {e}")
+            return []
+
+    def _search_and_scrape(self, questions):
+        docs = []
+        print("[2] Web search + scraping...")
+
+        for q in questions:
+            try:
+                results = self.search.search(q)
+            except Exception as e:
+                print(f"Search failed for '{q}': {e}")
+                continue
+
+            for r in results[:self.max_urls_per_query]:
+                url = r.get("url")
+                if not url:
+                    continue
+
+                try:
+                    doc = self.scrapper.scrape(url)
+                    if doc and doc.get("content"):
+                        doc["source"] = "web"
+                        docs.append(doc)
+                except Exception as e:
+                    print(f"Scraping failed for {url}: {e}")
+
+        return docs
+
+    def _fetch_and_parse_papers(self, query):
+        docs = []
+        print("[3] Paper fetch + parsing...")
+
+        try:
+            papers = self.paper_fetch.fetch(query)
+        except Exception as e:
+            print(f"Paper fetch failed: {e}")
+            return docs
+
+        for paper in papers:
+            pdf_url = paper.get("pdf_url")
+            if not pdf_url:
+                continue
+
+            try:
+                text = self.pdf_parser.parse(pdf_url)
+                if text:
+                    docs.append({
+                        "title": paper.get("title", "Research Paper"),
+                        "content": text,
+                        "source": "paper"
+                    })
+            except Exception as e:
+                print(f"PDF parsing failed for {pdf_url}: {e}")
+
+        return docs
 
 
+    def _rank(self, documents):
+        try:
+            print("[4] Ranking...")
+            ranked = self.ranker.rank(documents)
+            return ranked[:self.max_docs_after_ranking]
+        except Exception as e:
+            print(f"Ranking error: {e}")
+            return documents[:self.max_docs_after_ranking]
+
+    def _summarize(self, documents):
+        summaries = []
+        print("[5] Summarizing...")
+
+        for doc in documents:
+            try:
+                summary = self.synthesizer.summarize(doc)
+                if summary:
+                    summaries.append(summary)
+            except Exception as e:
+                print(f"Summarization failed: {e}")
+
+        return summaries
+
+    def _aggregate(self, query, summaries):
+        try:
+            print("[6] Aggregating final report...")
+            return self.aggregator.aggregate(query, summaries)
+        except Exception as e:
+            print(f"Aggregation error: {e}")
+            return "Failed to generate final report."

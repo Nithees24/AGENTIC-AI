@@ -9,16 +9,10 @@ class Planner:
 
         response = self.llm_client.generate(prompt)
 
-        return response
+        parsed = self._parse_response(response)
 
-    def _parse_response(self, response):
-        try:
-            return json.loads(response)
-        except:
-            start = response.find("{")
-            end = response.rfind("}") + 1
-            cleaned = response[start:end]
-            return json.loads(cleaned)
+        return parsed
+
 
     def _build_planner_prompt(self, user_query):
         return f"""
@@ -44,3 +38,24 @@ class Planner:
         User Query:
         {user_query}
         """
+
+    def _parse_response(self, response):
+        try:
+            return json.loads(response)
+        except:
+            try:
+                start = response.find("{")
+                end = response.rfind("}") + 1
+
+                if start == -1 or end == 0:
+                    raise ValueError("No JSON found")
+
+                cleaned = response[start:end]
+                return json.loads(cleaned)
+
+            except:
+                # fallback
+                return {
+                    "mode": "normal",
+                    "steps": []
+                }

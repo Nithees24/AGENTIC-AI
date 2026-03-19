@@ -1,4 +1,4 @@
-from tools.scrapper import Scrapper
+from tools.scraper import Scraper
 from tools.paper_fetch import PaperFetch
 from tools.pdf_parser import PDFParser
 from tools.web_search import WebSearch
@@ -14,19 +14,17 @@ class DeepResearchAgent:
        Plan → Search → Scrape → Fetch Papers → Parse PDFs → Rank → Summarize → Aggregate
     """
 
-    def __init__(self):
+    def __init__(self, llm_client):
         self.llm = llm_client
 
-        #pipeline
-        self.planner = Planner()
+        self.planner = Planner(llm_client)
         self.synthesizer = Synthesizer()
         self.ranker = Ranker()
         self.aggregator = Aggregator()
 
-        #tools
         self.paper_fetch = PaperFetch()
         self.web_search = WebSearch()
-        self.scraper = Scrapper()
+        self.scraper = Scraper()
         self.pdf_parser = PDFParser()
 
         #control
@@ -63,7 +61,8 @@ class DeepResearchAgent:
     def _plan(self, query):
         try:
             print("[1] Planning...")
-            return self.planner.plan(query)
+            plan = self.planner.plan(query)
+            return plan.get("steps", [])
         except Exception as e:
             print(f"Planner error: {e}")
             return []
@@ -74,7 +73,7 @@ class DeepResearchAgent:
 
         for q in questions:
             try:
-                results = self.search.search(q)
+                results = self.web_search.search(q)
             except Exception as e:
                 print(f"Search failed for '{q}': {e}")
                 continue
@@ -85,7 +84,7 @@ class DeepResearchAgent:
                     continue
 
                 try:
-                    doc = self.scrapper.scrape(url)
+                    doc = self.scraper.scrape(url)
                     if doc and doc.get("content"):
                         doc["source"] = "web"
                         docs.append(doc)

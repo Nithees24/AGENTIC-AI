@@ -1,39 +1,35 @@
-from agents.deep_research_agent import DeepResearchAgent
 from llm.llm_client import LLMClient
-from pipeline.planner import Planner
 from agents.general_chat_agent import GeneralChatAgent
+from pipeline.planner import Planner
 
 
 def main():
     llm_client = LLMClient()
+
     planner = Planner(llm_client)
-    agent = GeneralChatAgent(llm_client)
+    general_agent = GeneralChatAgent(llm_client)
 
     while True:
-        try:
-            user_query =  input("\nUser:")
-            if user_query.lower() in ["exit", "quit"]:
-                break
 
-            plan = planner.plan(user_query)
+        user_query = input("\nUser:")
 
-            print("\n🧠Plan:\n", plan)
-            mode = plan["mode"]
+        plan = planner.plan(user_query)
 
-            # Step 2: Route
-            if mode == "normal":
-                response = GeneralChatAgent.run(user_query, plan)
+        print("\n[Planner Output]:", plan)
 
-            elif mode == "deep_research":
-                response = DeepResearchAgent.run(user_query, plan)
+        mode = plan.get("mode")
 
-            else:
-                response = "Invalid mode from planner"
+        if mode == "normal":
+            response = general_agent.run(user_query)
 
-            print("\n🤖AI:",response)
+        elif mode == "deep_research":
+            response = "Deep research agent not implemented yet"
 
-        except Exception as e:
-            print("Error:", str(e))
+        else:
+            response = "Planner failed"
+
+        print("\nAI:", response)
+
 
 if __name__ == "__main__":
     main()

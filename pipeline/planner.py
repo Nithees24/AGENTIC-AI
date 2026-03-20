@@ -6,12 +6,8 @@ class Planner:
 
     def plan(self, user_query):
         prompt = self._build_planner_prompt(user_query)
-
         response = self.llm_client.generate(prompt)
-
-        parsed = self._parse_response(response)
-
-        return parsed
+        return self._parse_response(response)
 
 
     def _build_planner_prompt(self, user_query):

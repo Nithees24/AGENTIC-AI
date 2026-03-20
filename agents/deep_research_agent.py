@@ -17,19 +17,17 @@ class DeepResearchAgent:
     def __init__(self, llm_client):
         self.llm = llm_client
 
+        # pipeline
         self.planner = Planner(llm_client)
-        self.synthesizer = Synthesizer()
+        self.synthesizer = Synthesizer(llm_client)
         self.ranker = Ranker()
-        self.aggregator = Aggregator()
+        self.aggregator = Aggregator(llm_client)
 
+        # tools
         self.paper_fetch = PaperFetch()
         self.web_search = WebSearch()
         self.scraper = Scraper()
         self.pdf_parser = PDFParser()
-
-        #control
-        self.max_urls_per_query = 3
-        self.max_docs_after_ranking = 5
 
     def run(self, user_query:str)->str:
         try:

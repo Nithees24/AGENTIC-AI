@@ -1,13 +1,14 @@
 from llm.llm_client import LLMClient
 from agents.general_chat_agent import GeneralChatAgent
+from agents.deep_research_agent import DeepResearchAgent
 from pipeline.planner import Planner
-
 
 def main():
     llm_client = LLMClient()
 
     planner = Planner(llm_client)
     general_agent = GeneralChatAgent(llm_client)
+    deep_agent = DeepResearchAgent(llm_client)
 
     while True:
 
@@ -23,7 +24,7 @@ def main():
             response = general_agent.run(user_query)
 
         elif mode == "deep_research":
-            response = "Deep research agent not implemented yet"
+            response = deep_agent.run(user_query)
 
         else:
             response = "Planner failed"

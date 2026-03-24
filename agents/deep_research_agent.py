@@ -6,6 +6,7 @@ from pipeline.ranker import Ranker
 from pipeline.synthesizer import Synthesizer
 from pipeline.aggregator import Aggregator
 from pipeline.planner import Planner
+from pipeline.query_generator import QueryGenerator
 
 
 class DeepResearchAgent:
@@ -22,6 +23,7 @@ class DeepResearchAgent:
         self.synthesizer = Synthesizer(llm_client)
         self.ranker = Ranker()
         self.aggregator = Aggregator(llm_client)
+        self.query_generator = QueryGenerator(self.llm)
 
         # tools
         self.paper_fetch = PaperFetch()
@@ -29,10 +31,11 @@ class DeepResearchAgent:
         self.scraper = Scraper()
         self.pdf_parser = PDFParser()
 
+
     def run(self, user_query:str)->str:
         try:
-            questions = self._plan(user_query)
-            web_docs = self._search_and_scrape(questions)
+            queries  = self.query_generator.generate(user_query)
+            web_docs = self._search_and_scrape(queries)
             paper_docs = self._fetch_and_parse_papers(user_query)
 
             all_docs = web_docs + paper_docs
@@ -65,11 +68,13 @@ class DeepResearchAgent:
             print(f"Planner error: {e}")
             return []
 
-    def _search_and_scrape(self, questions):
+    def _search_and_scrape(self, user_query):
         docs = []
         print("[2] Web search + scraping...")
 
-        for q in questions:
+        queries = self.query_generator.generate(user_query)
+
+        for q in queries:
             try:
                 results = self.web_search.search(q)
             except Exception as e:
@@ -82,7 +87,7 @@ class DeepResearchAgent:
                     continue
 
                 try:
-                    doc = self.scraper.scrape(url)
+                    doc = self.scrapper.scrape(url)
                     if doc and doc.get("content"):
                         doc["source"] = "web"
                         docs.append(doc)

@@ -60,3 +60,15 @@ Research Synthesis
 Structured Report + Citations
 
 Should confirm : Evidence → Analysis → Conclusion
+
+
+
+29/03/2026 12:52 AM
+
+Added upto parser.py and finally completed 1st step of Deep research agent
+
+
+30/03/2026 1.33 AM
+
+Completed the frontend and added the connection to the backend with the General chat agent
+

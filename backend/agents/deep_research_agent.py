@@ -31,10 +31,13 @@ class DeepResearchAgent:
         self.scraper = Scraper()
         self.pdf_parser = PDFParser()
 
+        self.max_urls_per_query = 3
+        self.max_docs_after_ranking = 5
 
-    def run(self, user_query:str)->str:
+    def run(self, user_query: str) -> str:
         try:
-            queries  = self.query_generator.generate(user_query)
+            queries = self.query_generator.generate(user_query)
+
             web_docs = self._search_and_scrape(queries)
             paper_docs = self._fetch_and_parse_papers(user_query)
 
@@ -44,6 +47,7 @@ class DeepResearchAgent:
                 return "No relevant data found."
 
             ranked_docs = self._rank(all_docs)
+
             summaries = self._summarize(ranked_docs)
 
             if not summaries:
@@ -68,16 +72,9 @@ class DeepResearchAgent:
             print(f"Planner error: {e}")
             return []
 
-    def _search_and_scrape(self, user_query):
+    def _search_and_scrape(self, queries):
         docs = []
         print("[2] Web search + scraping...")
-
-        # Generate queries
-        try:
-            queries = self.query_generator.generate(user_query)
-        except Exception as e:
-            print(f"[QueryGenerator ERROR]: {e}")
-            return docs
 
         if not queries:
             print("[WARNING] No queries generated")
@@ -168,10 +165,15 @@ class DeepResearchAgent:
         try:
             print("[4] Ranking...")
             ranked = self.ranker.rank(documents)
-            return ranked[:self.max_docs_after_ranking]
+
+            limit = getattr(self, "max_docs_after_ranking", 5)
+            return ranked[:limit]
+
         except Exception as e:
             print(f"Ranking error: {e}")
-            return documents[:self.max_docs_after_ranking]
+
+            limit = getattr(self, "max_docs_after_ranking", 5)
+            return documents[:limit]
 
     def _summarize(self, documents):
         summaries = []

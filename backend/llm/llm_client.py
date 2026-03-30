@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 from google import genai
-from config import LLM_MODEL
+from backend.config import LLM_MODEL
 
 load_dotenv()
 API_KEY = os.getenv("GOOGLE_API_KEY")

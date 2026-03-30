@@ -4,6 +4,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from llm.llm_client import LLMClient
 from agents.general_chat_agent import GeneralChatAgent
+from agents.deep_research_agent import DeepResearchAgent
+from pipeline.planner import Planner
 
 app = FastAPI()
 
@@ -19,6 +21,8 @@ app.add_middleware(
 # ✅ Initialize once
 llm_client = LLMClient()
 general_agent = GeneralChatAgent(llm_client)
+deep_agent = DeepResearchAgent(llm_client)
+planner = Planner(llm_client)
 
 # ✅ Request schema (matches your frontend)
 class ChatRequest(BaseModel):
@@ -30,8 +34,19 @@ class ChatRequest(BaseModel):
 @app.post("/api/chat")
 def chat(req: ChatRequest):
     try:
-        # For now → only general chat
-        reply = general_agent.run(req.message)
+        # 🔥 1. UI override (highest priority)
+        if req.mode == "Deep Search":
+            reply = deep_agent.run(req.message)
+            return {"reply": reply}
+
+        # 🔥 2. Smart auto-routing using planner
+        plan = planner.plan(req.message)
+        mode = plan.get("mode")
+
+        if mode == "deep_research":
+            reply = deep_agent.run(req.message)
+        else:
+            reply = general_agent.run(req.message)
 
         return {"reply": reply}
 

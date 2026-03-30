@@ -72,28 +72,67 @@ class DeepResearchAgent:
         docs = []
         print("[2] Web search + scraping...")
 
-        queries = self.query_generator.generate(user_query)
+        # Generate queries
+        try:
+            queries = self.query_generator.generate(user_query)
+        except Exception as e:
+            print(f"[QueryGenerator ERROR]: {e}")
+            return docs
+
+        if not queries:
+            print("[WARNING] No queries generated")
+            return docs
 
         for q in queries:
+            print(f"[SEARCH] Query: {q}")
+
+            # --- Web Search ---
             try:
                 results = self.web_search.search(q)
             except Exception as e:
-                print(f"Search failed for '{q}': {e}")
+                print(f"[Search ERROR] '{q}': {e}")
                 continue
 
-            for r in results[:self.max_urls_per_query]:
-                url = r.get("url")
+            if not results:
+                print(f"[INFO] No results for query: {q}")
+                continue
+
+            # --- Limit URLs safely ---
+            max_urls = getattr(self, "max_urls_per_query", 3)
+
+            for r in results[:max_urls]:
+                if not isinstance(r, dict):
+                    continue
+
+                url = r.get("url") or r.get("link")
                 if not url:
                     continue
 
-                try:
-                    doc = self.scrapper.scrape(url)
-                    if doc and doc.get("content"):
-                        doc["source"] = "web"
-                        docs.append(doc)
-                except Exception as e:
-                    print(f"Scraping failed for {url}: {e}")
+                print(f"[SCRAPE] {url}")
 
+                # --- Scraping ---
+                try:
+                    doc = self.scraper.scrape(url)
+
+                    if not doc or not isinstance(doc, dict):
+                        continue
+
+                    content = doc.get("content")
+                    if not content:
+                        continue
+
+                    docs.append({
+                        "title": doc.get("title", "Web Document"),
+                        "content": content[:5000],  # prevent huge payloads
+                        "source": "web",
+                        "url": url
+                    })
+
+                except Exception as e:
+                    print(f"[Scraper ERROR] {url}: {e}")
+                    continue
+
+        print(f"[DONE] Collected {len(docs)} documents")
         return docs
 
     def _fetch_and_parse_papers(self, query):

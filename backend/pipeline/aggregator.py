@@ -6,21 +6,37 @@ class Aggregator:
         print("[Aggregator] Generating final answer...")
 
         if not summaries:
-            return "No summaries available to generate answer."
+            return "No summaries available."
 
-        combined = "\n\n".join(summaries)
+        # Create numbered sources
+        sources = []
+        formatted_summaries = []
+
+        for i, item in enumerate(summaries, start=1):
+            summary_text = item.get("summary", "")
+            url = item.get("url", "Unknown")
+
+            sources.append((i, url))
+
+            # Attach citation marker
+            formatted_summaries.append(f"[{i}] {summary_text}")
+
+        combined = "\n\n".join(formatted_summaries)
 
         prompt = f"""
 You are an expert research assistant.
 
-Using the information below, answer the user query.
+Answer the user query using the information below.
 
 STRICT INSTRUCTIONS:
+- Write a well-structured answer
+- Use clear sections (Overview, Key Points, etc.)
+- Keep it concise but informative
+- Naturally incorporate citation numbers like [1], [2] in the answer
+- Do NOT list sources inside the answer text
 - Do NOT ask for more input
-- Provide a clear, structured answer
-- Be concise but informative
 
-User Query:
+Query:
 {query}
 
 Information:
@@ -30,7 +46,15 @@ FINAL ANSWER:
 """
 
         try:
-            return self.llm.generate(prompt)
+            answer = self.llm.generate(prompt)
+
+            # Format sources section
+            sources_text = "\n".join(
+                f"[{i}] {url}" for i, url in sources
+            )
+
+            return f"{answer}\n\n---\n**Sources:**\n{sources_text}"
+
         except Exception as e:
             print(f"[Aggregator ERROR]: {e}")
             return "Failed to generate final answer."

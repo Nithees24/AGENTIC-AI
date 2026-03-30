@@ -1,3 +1,6 @@
+import requests
+from bs4 import BeautifulSoup
+
 class Scraper:
     def __init__(self):
         pass
@@ -5,15 +8,31 @@ class Scraper:
     def scrape(self, url):
         print(f"[Scraper] Scraping: {url}")
 
-        # Mock content (Phase 1)
-        return {
-            "title": "Sample Article",
-            "content": f"""
-This is sample content extracted from {url}.
+        try:
+            headers = {
+                "User-Agent": "Mozilla/5.0"
+            }
 
-It talks about important concepts related to the topic.
-This is placeholder data for testing the deep research pipeline.
+            response = requests.get(url, headers=headers, timeout=10)
 
-More detailed explanations would normally be scraped from the webpage.
-"""
-        }
+            if response.status_code != 200:
+                print(f"[Scraper ERROR] Status code: {response.status_code}")
+                return None
+
+            soup = BeautifulSoup(response.text, "html.parser")
+
+            # Extract paragraphs
+            paragraphs = soup.find_all("p")
+            text = " ".join(p.get_text() for p in paragraphs)
+
+            if not text.strip():
+                return None
+
+            return {
+                "title": url,
+                "content": text[:5000]  # limit size
+            }
+
+        except Exception as e:
+            print(f"[Scraper ERROR]: {e}")
+            return None

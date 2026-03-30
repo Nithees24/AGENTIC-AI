@@ -7,6 +7,7 @@ from backend.pipeline.synthesizer import Synthesizer
 from backend.pipeline.aggregator import Aggregator
 from backend.pipeline.planner import Planner
 from backend.pipeline.query_generator import QueryGenerator
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
 class DeepResearchAgent:
@@ -62,6 +63,27 @@ class DeepResearchAgent:
     # -----------------------------
     # Individual Steps
     # -----------------------------
+    def _scrape_single(self, url):
+        try:
+            doc = self.scraper.scrape(url)
+
+            if not doc or not isinstance(doc, dict):
+                return None
+
+            content = doc.get("content")
+            if not content or len(content) < 300:
+                return None
+
+            return {
+                "title": doc.get("title", "Web Document"),
+                "content": content[:5000],
+                "source": "web",
+                "url": url
+            }
+
+        except Exception as e:
+            print(f"[Scraper ERROR] {url}: {e}")
+            return None
 
     def _plan(self, query):
         try:
@@ -73,12 +95,64 @@ class DeepResearchAgent:
             return []
 
     def _search_and_scrape(self, queries):
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+
         docs = []
         print("[2] Web search + scraping...")
 
         if not queries:
             print("[WARNING] No queries generated")
             return docs
+
+        # ✅ Trusted high-quality domains
+        trusted_domains = [
+            "arxiv.org",
+            "nature.com",
+            "sciencedirect.com",
+            "nasa.gov",
+            "mit.edu",
+            "stanford.edu",
+            "ibm.com",
+            "aws.amazon.com",
+            "phys.org",
+            "wikipedia.org"
+        ]
+
+        # ❌ Weak / noisy domains
+        blocked_domains = [
+            "medium.com",
+            "quora.com",
+            "reddit.com",
+            "blogspot.com",
+            "wordpress.com"
+        ]
+
+        # ✅ Deduplication tracker
+        seen_contents = set()
+
+        # 🔧 Helper for parallel scraping
+        def scrape_single(url):
+            try:
+                doc = self.scraper.scrape(url)
+
+                if not doc or not isinstance(doc, dict):
+                    return None
+
+                content = doc.get("content", "").strip()
+
+                if not content or len(content) < 300:
+                    return None
+
+                return {
+                    "title": doc.get("title", "Web Document"),
+                    "content": content[:5000],
+                    "source": "web",
+                    "url": url
+                }
+
+            except Exception as e:
+                print(f"[Scraper ERROR] {url}: {e}")
+                return None
 
         for q in queries:
             print(f"[SEARCH] Query: {q}")
@@ -94,8 +168,9 @@ class DeepResearchAgent:
                 print(f"[INFO] No results for query: {q}")
                 continue
 
-            # --- Limit URLs safely ---
             max_urls = getattr(self, "max_urls_per_query", 3)
+
+            urls_to_scrape = []
 
             for r in results[:max_urls]:
                 if not isinstance(r, dict):
@@ -105,29 +180,58 @@ class DeepResearchAgent:
                 if not url:
                     continue
 
-                print(f"[SCRAPE] {url}")
+                # ❌ Skip non-text sources
+                if "youtube.com" in url:
+                    continue
 
-                # --- Scraping ---
-                try:
-                    doc = self.scraper.scrape(url)
+                # ❌ Block weak domains
+                if any(domain in url for domain in blocked_domains):
+                    continue
 
-                    if not doc or not isinstance(doc, dict):
+                # ✅ Allow only trusted domains
+                if not any(domain in url for domain in trusted_domains):
+                    continue
+
+                # ✅ Try using search snippet first
+                content = r.get("content")
+
+                if content:
+                    content = content.strip()
+
+                    if len(content) < 300:
                         continue
 
-                    content = doc.get("content")
-                    if not content:
+                    key = content[:200]
+                    if key in seen_contents:
                         continue
+
+                    seen_contents.add(key)
 
                     docs.append({
-                        "title": doc.get("title", "Web Document"),
-                        "content": content[:5000],  # prevent huge payloads
+                        "title": r.get("title", "Web Document"),
+                        "content": content[:5000],
                         "source": "web",
                         "url": url
                     })
+                else:
+                    urls_to_scrape.append(url)
 
-                except Exception as e:
-                    print(f"[Scraper ERROR] {url}: {e}")
-                    continue
+            # 🚀 Parallel scraping
+            with ThreadPoolExecutor(max_workers=5) as executor:
+                futures = [executor.submit(scrape_single, url) for url in urls_to_scrape]
+
+                for future in as_completed(futures):
+                    result = future.result()
+
+                    if not result:
+                        continue
+
+                    key = result["content"][:200]
+                    if key in seen_contents:
+                        continue
+
+                    seen_contents.add(key)
+                    docs.append(result)
 
         print(f"[DONE] Collected {len(docs)} documents")
         return docs
@@ -160,20 +264,52 @@ class DeepResearchAgent:
 
         return docs
 
-
     def _rank(self, documents):
+        print("[4] Ranking...")
+
         try:
-            print("[4] Ranking...")
-            ranked = self.ranker.rank(documents)
+            # 🔥 Domain priority (higher = better)
+            domain_scores = {
+                "arxiv.org": 10,
+                "nature.com": 10,
+                "sciencedirect.com": 9,
+                "nasa.gov": 9,
+                "mit.edu": 9,
+                "stanford.edu": 9,
+                "ibm.com": 8,
+                "aws.amazon.com": 8,
+                "phys.org": 7,
+                "wikipedia.org": 6
+            }
+
+            def score(doc):
+                url = doc.get("url", "")
+                content = doc.get("content", "")
+
+                # 🔹 Domain score
+                domain_score = 0
+                for domain, value in domain_scores.items():
+                    if domain in url:
+                        domain_score = value
+                        break
+
+                # 🔹 Content length score
+                length_score = min(len(content) / 1000, 5)
+
+                # 🔹 Source type bonus
+                source_bonus = 2 if doc.get("source") == "paper" else 0
+
+                return domain_score + length_score + source_bonus
+
+            # 🔥 Sort documents by score (descending)
+            ranked = sorted(documents, key=score, reverse=True)
 
             limit = getattr(self, "max_docs_after_ranking", 5)
             return ranked[:limit]
 
         except Exception as e:
-            print(f"Ranking error: {e}")
-
-            limit = getattr(self, "max_docs_after_ranking", 5)
-            return documents[:limit]
+            print(f"[Ranking ERROR]: {e}")
+            return documents[: getattr(self, "max_docs_after_ranking", 5)]
 
     def _summarize(self, documents):
         summaries = []
@@ -183,7 +319,10 @@ class DeepResearchAgent:
             try:
                 summary = self.synthesizer.summarize(doc)
                 if summary:
-                    summaries.append(summary)
+                    summaries.append({
+                        "summary": summary,
+                        "url": doc.get("url", "Unknown")
+                    })
             except Exception as e:
                 print(f"Summarization failed: {e}")
 

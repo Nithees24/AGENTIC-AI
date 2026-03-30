@@ -1,22 +1,34 @@
+from tavily import TavilyClient
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
 class WebSearch:
     def __init__(self):
-        pass
+        api_key = os.getenv("TAVILY_API_KEY")
+        self.client = TavilyClient(api_key=api_key)
 
     def search(self, query):
         print(f"[WebSearch] Searching for: {query}")
 
-        # Mock results (Phase 1)
-        return [
-            {
-                "title": "Sample Article 1",
-                "url": "https://example.com/article1"
-            },
-            {
-                "title": "Sample Article 2",
-                "url": "https://example.com/article2"
-            },
-            {
-                "title": "Sample Article 3",
-                "url": "https://example.com/article3"
-            }
-        ]
+        try:
+            response = self.client.search(
+                query=query,
+                max_results=5
+            )
+
+            results = response.get("results", [])
+
+            return [
+                {
+                    "title": r.get("title"),
+                    "url": r.get("url"),
+                    "content": r.get("content", "")
+                }
+                for r in results
+            ]
+
+        except Exception as e:
+            print(f"[WebSearch ERROR]: {e}")
+            return []

@@ -1,4 +1,4 @@
-from utils.prompt_builder import build_prompt
+from backend.utils.prompt_builder import build_prompt
 
 
 class GeneralChatAgent:

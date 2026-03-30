@@ -1,12 +1,12 @@
-from tools.scraper import Scraper
-from tools.paper_fetch import PaperFetch
-from tools.pdf_parser import PDFParser
-from tools.web_search import WebSearch
-from pipeline.ranker import Ranker
-from pipeline.synthesizer import Synthesizer
-from pipeline.aggregator import Aggregator
-from pipeline.planner import Planner
-from pipeline.query_generator import QueryGenerator
+from backend.tools.scraper import Scraper
+from backend.tools.paper_fetch import PaperFetch
+from backend.tools.pdf_parser import PDFParser
+from backend.tools.web_search import WebSearch
+from backend.pipeline.ranker import Ranker
+from backend.pipeline.synthesizer import Synthesizer
+from backend.pipeline.aggregator import Aggregator
+from backend.pipeline.planner import Planner
+from backend.pipeline.query_generator import QueryGenerator
 
 
 class DeepResearchAgent:

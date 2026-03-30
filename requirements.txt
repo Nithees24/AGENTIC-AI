@@ -2,13 +2,12 @@
 # Core LLM + Environment
 # ----------------------------
 google-genai==1.69.0
-python-dotenv==1.0.1
 
 # ----------------------------
 # HTTP & Networking
 # ----------------------------
 requests==2.31.0
-httpx==0.26.0
+httpx>=0.28.1
 aiohttp==3.9.5
 
 # ----------------------------
@@ -16,6 +15,7 @@ aiohttp==3.9.5
 # ----------------------------
 beautifulsoup4==4.12.3
 lxml==5.2.2
+python-dotenv==1.2.2
 
 # ----------------------------
 # PDF Parsing
@@ -53,7 +53,7 @@ sentence-transformers==2.7.0
 # ----------------------------
 fastapi==0.115.0
 uvicorn==0.30.1
-pydantic==2.7.1
+pydantic>=2.9.0,<3.0.0
 
 # ----------------------------
 # Retry / Stability

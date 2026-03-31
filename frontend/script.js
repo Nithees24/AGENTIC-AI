@@ -8,6 +8,7 @@ const modeChipInline = document.getElementById("modeChipInline");
 const modeChipClose = document.getElementById("modeChipClose");
 const composer = document.getElementById("composer");
 const promptInput = document.getElementById("promptInput");
+const themeToggleCheckbox = document.getElementById("themeToggleCheckbox");
 const sendButton = composer.querySelector(".send-button");
 const agentTrigger = document.getElementById("agentTrigger");
 const agentMenu = document.getElementById("agentMenu");
@@ -105,7 +106,7 @@ const createMessage = (role, content, options = {}) => {
   const card = document.createElement("div");
   card.className = "message-card";
 
-  const body = document.createElement("p");
+  const body = document.createElement("div");
   body.className = "message-text";
   body.textContent = content;
 
@@ -259,6 +260,10 @@ rightPanelToggle.addEventListener("click", () => {
   syncPanelToggles();
 });
 
+themeToggleCheckbox.addEventListener("change", (e) => {
+  document.documentElement.setAttribute("data-theme", e.target.checked ? "dark" : "light");
+});
+
 historyMoreButtons.forEach((button) => {
   button.addEventListener("click", (event) => {
     event.stopPropagation();
@@ -304,15 +309,24 @@ document.addEventListener("click", (event) => {
   }
 });
 
+const parseMarkdown = (rawText) => {
+  let html = rawText;
+  html = html.replace(/^### (.*$)/gim, '<h3 style="margin: 0.5em 0;">$1</h3>');
+  html = html.replace(/^## (.*$)/gim, '<h2 style="margin: 0.5em 0;">$1</h2>');
+  html = html.replace(/^# (.*$)/gim, '<h1 style="margin: 0.5em 0;">$1</h1>');
+  html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/\n/g, '<br>');
+  return html;
+};
+
 const typeWriterEffect = async (element, text, speed = 40) => {
-  element.textContent = "";
+  element.innerHTML = "";
+  let accumulatedText = "";
   const words = text.split(/(\s+)/);
   for (let i = 0; i < words.length; i++) {
-    const isAtBottom = Math.abs(chatWindow.scrollHeight - chatWindow.scrollTop - chatWindow.clientHeight) < 60;
-    element.textContent += words[i];
-    if (isAtBottom) {
-      chatWindow.scrollTop = chatWindow.scrollHeight;
-    }
+    accumulatedText += words[i];
+    element.innerHTML = parseMarkdown(accumulatedText);
+    
     if (words[i].trim().length > 0) {
       await new Promise((resolve) => setTimeout(resolve, speed));
     }
@@ -374,7 +388,6 @@ composer.addEventListener("submit", (event) => {
     .finally(() => {
       setComposerBusy(false);
       promptInput.focus();
-      chatWindow.scrollTop = chatWindow.scrollHeight;
     });
 });
 

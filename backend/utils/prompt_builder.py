@@ -2,7 +2,7 @@ import re
 
 def build_prompt(user_query):
     clean_query = re.sub(r'[^a-zA-Z\s]', '', user_query.strip()).lower()
-    greetings = {"hi", "hello", "hey", "greetings", "good morning", "good afternoon", "good evening", "hiya", "howdy","hola","how are you?","how are you","how are you doing", "how are you doing?","hi how are you","hi how are you?","hi lovelace","hi lovelace!","hi there","hi there!","hi there how are you","hi there, how are you?","hi there how are you?","hi there!, how are you?","hi there, how are you","hi there!, how are you?"}
+    greetings = {"hi", "hello", "hey", "greetings", "good morning", "good afternoon", "good evening", "hiya", "howdy","hola","how are you?","how are you","how are you doing", "how are you doing?","hi how are you","hi how are you?","hi lovelace","hi lovelace!","hi there","hi there!","hi there how are you","hi there, how are you?","hi there how are you?","hi there!, how are you?","hi there, how are you","hi there!, how are you?","hi there!how are you?"}
     
     if clean_query in greetings:
         SYSTEM_PROMPT = """You are Lovelace, an AI assistant. The user just greeted you.

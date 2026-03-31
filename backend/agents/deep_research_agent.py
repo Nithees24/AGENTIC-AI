@@ -188,9 +188,9 @@ class DeepResearchAgent:
                 if any(domain in url for domain in blocked_domains):
                     continue
 
-                # ✅ Allow only trusted domains
-                if not any(domain in url for domain in trusted_domains):
-                    continue
+                # ✅ Allow other domains (ranking handles prioritizing trusted domains later)
+                # if not any(domain in url for domain in trusted_domains):
+                #     continue
 
                 # ✅ Try using search snippet first
                 content = r.get("content")

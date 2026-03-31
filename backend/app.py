@@ -2,10 +2,10 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 
-from llm.llm_client import LLMClient
-from agents.general_chat_agent import GeneralChatAgent
-from agents.deep_research_agent import DeepResearchAgent
-from pipeline.planner import Planner
+from backend.llm.llm_client import LLMClient
+from backend.agents.general_chat_agent import GeneralChatAgent
+from backend.agents.deep_research_agent import DeepResearchAgent
+from backend.pipeline.planner import Planner
 
 app = FastAPI()
 
@@ -35,7 +35,7 @@ class ChatRequest(BaseModel):
 def chat(req: ChatRequest):
     try:
         # 🔥 1. UI override (highest priority)
-        if req.mode == "Deep Search":
+        if req.mode == "Deep Research":
             reply = deep_agent.run(req.message)
             return {"reply": reply}
 

@@ -1,7 +1,7 @@
-from llm.llm_client import LLMClient
-from agents.general_chat_agent import GeneralChatAgent
-from agents.deep_research_agent import DeepResearchAgent
-from pipeline.planner import Planner
+from backend.llm.llm_client import LLMClient
+from backend.agents.general_chat_agent import GeneralChatAgent
+from backend.agents.deep_research_agent import DeepResearchAgent
+from backend.pipeline.planner import Planner
 
 def main():
     llm_client = LLMClient()

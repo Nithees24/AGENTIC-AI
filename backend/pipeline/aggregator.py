@@ -35,6 +35,7 @@ STRICT INSTRUCTIONS:
 - Naturally incorporate citation numbers like [1], [2] in the answer
 - Do NOT list sources inside the answer text
 - Do NOT ask for more input
+- FORMATTING CRITICAL: Do NOT use ANY Markdown formatting (no ###, **, *, etc). Use ALL CAPS for section titles.
 
 Query:
 {query}

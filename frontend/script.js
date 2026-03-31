@@ -16,7 +16,7 @@ const historyItems = Array.from(document.querySelectorAll(".history-topic"));
 const historyMoreButtons = Array.from(document.querySelectorAll(".history-more"));
 
 const CHAT_MODE = "Chat Agent";
-const DEEP_MODE = "Deep Search";
+const DEEP_MODE = "Deep Research";
 const API_ENDPOINT = "http://127.0.0.1:8000/api/chat";
 
 let activeMode = CHAT_MODE;

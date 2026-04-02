@@ -79,7 +79,7 @@ const autoResize = () => {
 const initLoadAnimations = () => {
   const revealTargets = [
     ...document.querySelectorAll(".sidebar .panel-body > *"),
-    ...document.querySelectorAll(".chat-stage > .panel-controls, .chat-stage > .chat-intro, .chat-stage > .chat-window, .chat-stage > .composer"),
+    ...document.querySelectorAll(".chat-stage > .panel-controls, .chat-stage > .chat-intro, .chat-stage > .chat-window, .chat-stage > .composer, .chat-stage > .composer-note"),
     ...document.querySelectorAll(".control-panel .panel-body > *")
   ];
 

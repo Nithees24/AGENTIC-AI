@@ -261,7 +261,48 @@ rightPanelToggle.addEventListener("click", () => {
 });
 
 themeToggleCheckbox.addEventListener("change", (e) => {
-  document.documentElement.setAttribute("data-theme", e.target.checked ? "dark" : "light");
+  const isDark = e.target.checked;
+  const theme = isDark ? "dark" : "light";
+
+  if (!document.startViewTransition) {
+    document.documentElement.setAttribute("data-theme", theme);
+    return;
+  }
+
+  const rect = e.target.getBoundingClientRect();
+  const x = rect.left + rect.width / 2;
+  const y = rect.top + rect.height / 2;
+
+  const endRadius = Math.hypot(
+    Math.max(x, window.innerWidth - x),
+    Math.max(y, window.innerHeight - y)
+  );
+
+  document.documentElement.classList.add("theme-transition");
+
+  const transition = document.startViewTransition(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+  });
+
+  transition.ready.then(() => {
+    document.documentElement.animate(
+      {
+        clipPath: [
+          `circle(0px at ${x}px ${y}px)`,
+          `circle(${endRadius}px at ${x}px ${y}px)`
+        ],
+      },
+      {
+        duration: 500,
+        easing: "ease-out",
+        pseudoElement: "::view-transition-new(root)",
+      }
+    );
+  });
+
+  transition.finished.then(() => {
+    document.documentElement.classList.remove("theme-transition");
+  });
 });
 
 historyMoreButtons.forEach((button) => {

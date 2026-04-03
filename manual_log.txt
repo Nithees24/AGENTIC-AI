@@ -72,3 +72,7 @@ Added upto parser.py and finally completed 1st step of Deep research agent
 
 Completed the frontend and added the connection to the backend with the General chat agent
 
+4/4/26 - 3.43 AM
+
+Added the deep research agent module and added DB CONNECTION to the FastAPI - first task completed done
+

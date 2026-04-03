@@ -138,7 +138,7 @@ const requestAssistantReply = async (message) => {
     body: JSON.stringify({
       message,
       mode: activeMode,
-      messages: conversationHistory
+      conversation_id: 1
     })
   });
 

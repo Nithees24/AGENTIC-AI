@@ -16,7 +16,8 @@ It automatically decides:
 - 🔬 Deep Research Mode → structured research
 - 🖼️ UI Preview
 
-⚠️ Replace these with real screenshots later (/assets/...)
+<img width="1918" height="912" alt="version 0 0 1" src="https://github.com/user-attachments/assets/25cc5ada-d9ba-4bfe-a89e-a1f1b74f0066" />
+
 
 💬 Chat Mode
 
@@ -137,3 +138,6 @@ project-root/
 - 🍴 Fork it
 - 🚀 Build something amazing
 - 🔥 Next Upgrade (Highly Recommended)
+
+  
+<img width="1918" height="916" alt="version 0 0 1_1" src="https://github.com/user-attachments/assets/70275646-2c41-4a43-bcd3-5b63bc5f28ec" />

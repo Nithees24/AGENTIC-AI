@@ -138,6 +138,3 @@ project-root/
 - 🍴 Fork it
 - 🚀 Build something amazing
 - 🔥 Next Upgrade (Highly Recommended)
-
-  
-<img width="1918" height="916" alt="version 0 0 1_1" src="https://github.com/user-attachments/assets/70275646-2c41-4a43-bcd3-5b63bc5f28ec" />
